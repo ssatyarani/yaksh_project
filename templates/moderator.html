@@ -1,0 +1,151 @@
+{% extends "navigation.html" %}
+
+{% block navbar %}
+<li class="active"><a href="{% url 'home' %}">Home</a></li>
+<li class="dropdown">
+<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Show Questions <span class="caret"></span></a>
+<ul class="dropdown-menu">
+<li><a href="{% url 'mod_show_mcq' %}" >Unapproved MCQ</a></li>
+<li><a href="{% url 'mod_show_cq' %}" >Unapproved CQ</a></li>
+<li><a href="{% url 'mod_show_approved_mcq' %}">Approved MCQ</a></li>
+<li><a href="{% url 'mod_show_approved_cq' %}">Approved CQ</a></li>
+</ul>
+</li>
+<li><a href="{% url 'logout_page' %}">Logout</a></li>
+ {% endblock %}
+{% block content %}
+<h3>Title: {{ question.title|safe }}</h3>
+<b>Creator : </b> {{ question.user }}<br />
+<b>Avg. Rating : </b> {{ question.avg_rating }}<br />
+{% ifequal question.status 1 %}
+<b>Status: <u>Approved</u></b>  <button class="btn btn-danger" onclick="window.location='approve/';"  >Disapprove </button><br/>
+{% else %}
+<b>Status: <u>Unseen</u></b>  <button class="btn btn-primary" onclick="window.location='approve/';" >Approve </button><br/>
+{% endifequal %}
+<br />
+<h3>Question</h3>
+<ul>
+	{% for each in question_choices %}
+		<li>
+		{{ each.Question.text }}
+		<ul>
+		{% for each_choice in each.Choices %}
+			<li> 
+			
+			{% if each_choice.correct %}
+			<b><u>
+			{% endif %}
+
+			{{ each_choice.text }} 
+
+			</u></b>
+			</li>
+		{% endfor %}
+		</ul>
+		</li>
+
+	{% endfor %}
+
+	</ul>
+<ul>
+	{% for each in question_testcases %}
+		<li>
+		{{ each.Question.text }}
+		<ul>
+		
+		{% for testcase in each.Testcases %}
+		<b>Testcase</b>
+		<ul>
+		Input:
+		{% for input in testcase.input %}
+				<li>{{input.value}}</li>
+		{% endfor %}
+		</ul>
+
+		<ul>
+		Output:
+		{% for output in testcase.output %}
+			<li>{{ output.value }}</li>
+		{% endfor %}
+		</ul>
+
+		{% endfor %}
+		
+		
+		</ul>
+		</li>
+
+	{% endfor %}
+
+	</ul>
+<h3>Ratings</h3>
+<ul>
+	{% if ratings_empty %}
+	<li>Not yet rated</li>
+	{% else %}
+	{% for each in question_ratings %}
+		
+		
+		{% for each_rating in each.Ratings %}
+			<li> 
+			
+			{{ each_rating.get_rate_display }} by {{ each_rating.user }}
+			
+
+			
+			</li>
+		{% endfor %}
+		
+
+	{% endfor %}
+	{% endif %}
+	</ul>
+<h3>Reviews</h3>
+<ul>
+
+	{% if reviews_empty %}
+	<li>Not yet reviewed</li>
+	{% else %}
+	{% for each in question_reviews %}
+		
+		
+		{% for each_review in each.Reviews %}
+			<li> 
+			
+			{{ each_review.comments}} by {{ each_review.reviewer }}
+			
+
+			
+			</li>
+		{% endfor %}
+		
+
+	{% endfor %}
+	{% endif %}
+	</ul>
+
+<p>
+
+
+<br />
+<form action="postcomment/" method="post" onsubmit="return validate();">
+<input type="hidden" name="type" class="btn btn-primary" value="moderator" />
+Comments:
+<textarea name="content" id="content"  cols=30 rows=2></textarea><br/>
+<input type="submit" value="Post" class="btn btn-primary"/>
+{% csrf_token %}
+
+</form>
+</p>
+<script type="text/javascript ">
+function validate(){
+	content=document.getElementById("content").value;
+	if (content==""){
+		alert("Please enter review");
+		return false;
+	}
+	return true;
+}
+</script>
+
+{% endblock  %}
